@@ -1,0 +1,833 @@
+
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CRM для сервисного центра</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        background: #f6f7f9;
+        color: #333;
+    }
+
+    nav {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background: #1e293b;
+        padding: 2rem 1rem;
+        min-width: 220px;
+        height: 100vh;
+    }
+
+    nav button {
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        text-align: left;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: background 0.2s ease;
+    }
+
+    nav button:hover {
+        background: #334155;
+    }
+
+    .layout {
+        display: flex;
+        height: 100vh;
+    }
+
+    .page-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+    }
+
+    .page {
+        display: none;
+    }
+
+    .page.active {
+        display: block;
+    }
+
+    h2, h3 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+        margin-top: 1rem;
+    }
+
+    th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        background: #e2e8f0;
+        border-radius: 10px 10px 0 0;
+    }
+
+    td {
+        background: white;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        vertical-align: middle;
+    }
+
+    tr:hover td {
+        background: #f1f5f9;
+    }
+
+    input, textarea, button {
+        font-size: 1rem;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    input:focus, textarea:focus {
+        border-color: #3b82f6;
+        outline: none;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        margin-right: 0.5rem;
+    }
+
+    button:hover {
+        background: #2563eb;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    }
+
+    .modal .content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 90%;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        color: #475569;
+    }
+
+    .modal input, .modal textarea {
+        margin-bottom: 1rem;
+    }
+
+    .actions button {
+        background: none;
+        border: none;
+        color: #475569;
+        font-size: 1rem;
+        padding: 0.2rem;
+    }
+
+    .actions button:hover {
+        color: #1d4ed8;
+    }
+
+    .lang-toggle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+    }
+
+    .lang-toggle button {
+        background: white;
+        padding: 0.25rem 0.5rem;
+        font-size: 1.1rem;
+        margin-left: 0.25rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .lang-toggle button:hover {
+        background: #e2e8f0;
+    }
+    
+    .modal .content button,
+    .btn-compact {
+        padding: 0.4rem 0.9rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 6px;
+    }
+
+    .modal .content button:not(:last-child) {
+        margin-right: 0.5rem;
+    }
+
+    #repairs > button,
+    #inventory > button {
+        max-width: fit-content;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
+    }
+    
+    .btn-compact {
+        width: fit-content;
+        min-width: 80px;
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    @media (max-width: 768px) {
+        .layout {
+            flex-direction: column;
+        }
+
+        nav {
+            flex-direction: row;
+            height: auto;
+            width: 100%;
+            justify-content: space-around;
+            padding: 0.5rem;
+        }
+
+        nav button {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .page-area {
+            padding: 1rem;
+        }
+
+        table, thead, tbody, th, td, tr {
+            display: block;
+            width: 100%;
+        }
+
+        thead {
+            display: none;
+        }
+
+        tr {
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            background: #fff;
+        }
+
+        td {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        td:last-child {
+            border-bottom: none;
+        }
+
+        .modal .content {
+            width: 95% !important;
+            padding: 1rem;
+        }
+
+        input, textarea, button {
+            font-size: 1rem;
+        }
+
+        .lang-toggle {
+            top: 5px;
+            right: 5px;
+        }
+    }
+    
+    .lang-toggle {
+        top: 10px;
+        right: 10px;
+        position: fixed;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 0.2rem 0.4rem;
+        z-index: 1100;
+    }
+
+    @media (max-width: 768px) {
+        .lang-toggle {
+            top: auto;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .modal {
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .modal .content {
+            margin-top: 2rem;
+        }
+    }
+    </style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="lang-toggle">
+<button data-lang="🇷🇺" onclick="switchLang('ru')" title="Русский 🇷🇺">🇷🇺</button>
+<button data-lang="🇮🇱" onclick="switchLang('he')" title="עברית 🇮🇱">🇮🇱</button>
+</div>
+<div class="layout"><nav><button onclick="showPage('overview')">Обзор</button>
+<button data-lang="Ремонты" onclick="showPage('repairs')">Ремонты</button>
+<button data-lang="Клиенты" onclick="showPage('clients')">Клиенты</button>
+<button data-lang="Склад" onclick="showPage('inventory')">Склад</button><button onclick="showPage('billing')">Счет</button></nav><div class="page-area">
+<div class="page" id="overview">
+<h2>Анализ ремонтов</h2>
+<canvas id="repair-status-chart" style="max-width: 500px; margin: 2rem auto;"></canvas>
+<h3>Финансовый итог</h3></div>
+<div class="page active" id="repairs">
+<div style="margin: 1rem 0;">
+<label style="font-weight: 600;">Фильтр по оплате: </label>
+<select id="payment-filter" onchange="renderRepairs()">
+<option value="all">Все</option>
+<option value="paid">Только оплаченные</option>
+<option value="unpaid">Только не оплаченные</option>
+</select>
+</div>
+<div style="margin: 1rem 0;">
+<label for="search-repairs" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Поиск по ремонтам</label>
+<input id="search-repairs" oninput="filterRepairs()" placeholder="Поиск по ремонтам..." style="max-width: 300px;" type="text"/>
+</div><h2 data-lang="Ремонты">Ремонты</h2>
+<button data-lang="Новый ремонт" onclick="openRepairForm()">Новый ремонт</button>
+<table>
+<thead><tr><th data-lang="Клиент">Клиент</th><th data-lang="Телефон">Телефон</th><th data-lang="Устройство">Устройство</th><th>Оплата</th><th data-lang="Действия">Действия</th></tr></thead>
+<tbody id="repairs-table"></tbody>
+</table>
+</div><div class="page" id="clients">
+<div style="margin: 1rem 0;">
+<label for="search-clients" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Поиск по клиентам</label>
+<input id="search-clients" oninput="filterClients()" placeholder="Поиск по клиентам..." style="max-width: 300px;" type="text"/>
+</div><h2 data-lang="Клиенты">Клиенты</h2>
+<table>
+<thead><tr><th data-lang="ФИО">ФИО</th><th data-lang="Телефон">Телефон</th><th data-lang="Действия">Действия</th></tr></thead>
+<tbody id="clients-table"></tbody>
+</table>
+</div><div class="page" id="inventory">
+<div style="margin: 1rem 0;">
+<label for="search-inventory" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Поиск по складу</label>
+<input id="search-inventory" oninput="filterInventory()" placeholder="Поиск по складу..." style="max-width: 300px;" type="text"/>
+</div><h2 data-lang="Склад">Склад</h2>
+<button data-lang="Добавить позицию" onclick="openInventoryForm()">Добавить позицию</button>
+<table>
+<thead>
+<tr><th data-lang="Название">Название</th><th data-lang="Количество">Количество</th><th data-lang="Цена">Цена</th><th data-lang="Действия">Действия</th></tr>
+</thead>
+<tbody id="inventory-table"></tbody>
+</table>
+</div>
+</div></div>
+<div class="modal" id="repair-modal">
+<div class="content" style="background: #fff; padding: 2rem; border-radius: 10px; width: 80%; max-width: 1000px;">
+<h3 data-lang="Новый ремонт">Новый ремонт</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="ФИО клиента *">ФИО клиента *</label>
+<input data-placeholder="ФИО клиента" id="name" placeholder="ФИО клиента"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Телефон *">Телефон *</label>
+<input data-placeholder="Телефон" id="phone" placeholder="Телефон"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Email">Email</label>
+<input data-placeholder="Email" id="email" placeholder="Email"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Адрес">Адрес</label>
+<input data-placeholder="Адрес" id="address" placeholder="Адрес"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Тип устройства">Тип устройства</label>
+<input data-placeholder="Тип устройства" id="device" placeholder="Тип устройства"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Бренд">Бренд</label>
+<input data-placeholder="Бренд" id="brand" placeholder="Бренд"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Модель">Модель</label>
+<input data-placeholder="Модель" id="model" placeholder="Модель"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="IMEI / Серийный номер">IMEI / Серийный номер</label>
+<input data-placeholder="IMEI / Серийный номер" id="imei" placeholder="IMEI / Серийный номер"/>
+</div>
+<div style="flex: 1 1 100%;">
+<label data-lang="Проблема">Проблема</label>
+<textarea data-placeholder="Опишите проблему..." id="problem" placeholder="Опишите проблему..." style="width: 100%; height: 80px;"></textarea>
+</div>
+<div style="flex: 1 1 100%;">
+<label><input id="paid" type="checkbox"/> Оплачено</label>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label>Статус</label>
+<select id="status">
+<option value="в ремонте">В ремонте</option>
+<option value="ждет запчасть">Ждёт запчасть</option>
+<option value="закрыт">Закрыт</option>
+</select>
+</div>
+<div style="flex: 1 1 100%; text-align: right;">
+<button class="btn-compact" data-lang="Сохранить" onclick="saveRepair()">Сохранить</button>
+<button class="btn-compact" data-lang="Отмена" onclick="closeRepairForm()">Отмена</button>
+</div>
+</div>
+</div>
+</div>
+<div class="modal" id="repair-detail-modal">
+<div class="content" style="background: #fff; padding: 2rem; border-radius: 10px; width: 80%; max-width: 1000px;">
+<h3 data-lang="Редактировать ремонт">Редактировать ремонт</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="ФИО клиента">ФИО клиента</label>
+<input id="edit-name"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Телефон">Телефон</label>
+<input id="edit-phone"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Тип устройства">Тип устройства</label>
+<input id="edit-device"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Бренд">Бренд</label>
+<input id="edit-brand"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="Модель">Модель</label>
+<input id="edit-model"/>
+</div>
+<div style="flex: 1; min-width: 200px;">
+<label data-lang="IMEI / Серийный номер">IMEI / Серийный номер</label>
+<input id="edit-imei"/>
+</div>
+<div style="flex: 1 1 100%;">
+<label data-lang="Проблема">Проблема</label>
+<textarea id="edit-problem" style="width: 100%; height: 80px;"></textarea>
+</div>
+<div style="flex: 1 1 100%; text-align: right;">
+<button class="btn-compact" data-lang="Сохранить изменения" onclick="applyRepairEdit()">Сохранить изменения</button>
+<button class="btn-compact" data-lang="Отмена" onclick="closeRepairDetail()">Отмена</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    let repairs = JSON.parse(localStorage.getItem('repairs') || '[]');
+    let clients = JSON.parse(localStorage.getItem('clients') || '[]');
+    let editingIndex = null;
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function openRepairForm() {
+      document.getElementById('repair-modal').style.display = 'flex';
+    }
+
+    function closeRepairForm() {
+      document.getElementById('repair-modal').style.display = 'none';
+    }
+
+    function openRepairDetail(rIndex) {
+      const r = repairs[rIndex];
+      editingIndex = rIndex;
+      document.getElementById('edit-name').value = r.name;
+      document.getElementById('edit-phone').value = r.phone;
+      document.getElementById('edit-device').value = r.device;
+      document.getElementById('repair-detail-modal').style.display = 'flex';
+    }
+
+    function closeRepairDetail() {
+      document.getElementById('repair-detail-modal').style.display = 'none';
+      editingIndex = null;
+    }
+
+    function applyRepairEdit() {
+      if (editingIndex !== null) {
+        const name = document.getElementById('edit-name').value.trim();
+        const phone = document.getElementById('edit-phone').value.trim();
+        const device = document.getElementById('edit-device').value.trim();
+        if (!name || !phone) return alert("ФИО и телефон обязательны");
+
+        repairs[editingIndex] = { name, phone, device ,
+  'ФИО клиента': { he: 'שם הלקוח' },
+  'Email': { he: 'אימייל' },
+  'Адрес': { he: 'כתובת' },
+  'Тип устройства': { he: 'סוג המכשיר' },
+  'Бренд': { he: 'מותג' },
+  'Модель': { he: 'דגם' },
+  'IMEI / Серийный номер': { he: 'IMEI / מספר סידורי' },
+  'Опишите проблему...': { he: 'תאר את הבעיה...' },
+  'Название': { he: 'שם פריט' },
+  'Количество': { he: 'כמות' },
+  'Цена': { he: 'מחיר' }
+};
+        localStorage.setItem('repairs', JSON.stringify(repairs));
+        renderRepairs();
+        closeRepairDetail();
+      }
+    }
+
+    function saveRepair() {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const device = document.getElementById('device').value.trim();
+      if (!name || !phone) return alert("ФИО и телефон обязательны");
+
+      repairs.push({ name, phone, device, price, paid: document.getElementById('paid').checked, status: document.getElementById('status').value });
+      localStorage.setItem('repairs', JSON.stringify(repairs));
+
+      if (!clients.some(c => c.phone === phone)) {
+        clients.push({ name, phone });
+        localStorage.setItem('clients', JSON.stringify(clients));
+      }
+
+      closeRepairForm();
+      renderRepairs();
+      renderClients();
+    }
+
+    function renderRepairs() {
+      const tbody = document.getElementById('repairs-table');
+      tbody.innerHTML = '';
+      
+let filter = document.getElementById("payment-filter")?.value || "all";
+repairs.forEach((r, i) => {
+  if (filter === "paid" && !r.paid) return;
+  if (filter === "unpaid" && r.paid) return;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${r.name}</td>
+          <td>${r.phone}</td>
+          <td>${r.device}</td>
+<td>${r.paid ? 'Оплачено' : 'Не оплачено'}</td>
+          <td class="actions">
+            <button title="Просмотр" onclick='openRepairDetail(${i})'><i class="fas fa-eye"></i></button>
+            <button title="Удалить" onclick="deleteRepair(${i})"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderClients() {
+      const tbody = document.getElementById('clients-table');
+      tbody.innerHTML = '';
+      clients.forEach((c, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${c.name}</td><td>${c.phone}</td>
+            <td class='actions'>
+                <button class="icon-button" onclick="openClientModal(${i}); event.stopPropagation();" title="Просмотр"><i class='fas fa-eye'></i></button>
+                <button class="icon-button" onclick="deleteClient(${i}); event.stopPropagation();" title="Удалить"><i class='fas fa-trash'></i></button>
+            </td>`;
+        row.onclick = () => openClientModal(i);
+        tbody.appendChild(row);
+      });
+    }
+
+    function deleteRepair(index) {
+      repairs.splice(index, 1);
+      localStorage.setItem('repairs', JSON.stringify(repairs));
+      renderRepairs();
+    }
+
+    renderRepairs();
+    renderClients();
+  
+
+let inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+
+function openInventoryForm() {
+  document.getElementById('inventory-modal').style.display = 'flex';
+}
+function closeInventoryForm() {
+  document.getElementById('inventory-modal').style.display = 'none';
+}
+
+function saveInventoryItem() {
+  const name = document.getElementById('item-name').value.trim();
+  const qty = parseInt(document.getElementById('item-qty').value);
+  const price = parseFloat(document.getElementById('item-price').value);
+
+  if (!name || isNaN(qty) || isNaN(price)) return alert("Заполните все поля");
+
+  inventory.push({ name, qty, price });
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+  closeInventoryForm();
+  renderInventory();
+}
+
+function renderInventory() {
+  const tbody = document.getElementById('inventory-table');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  inventory.forEach((item, i) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.qty}</td>
+      <td>${item.price}</td>
+      <td><button onclick="deleteInventoryItem(${i})"><i class="fas fa-trash"></i></button></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function deleteInventoryItem(index) {
+  inventory.splice(index, 1);
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+  renderInventory();
+}
+
+renderInventory();
+
+
+let editingClientIndex = null;
+
+function openClientModal(index) {
+  const c = clients[index];
+  editingClientIndex = index;
+  document.getElementById("client-modal-name").value = c.name;
+  document.getElementById("client-modal-phone").value = c.phone;
+  document.getElementById("client-modal").style.display = 'flex';
+}
+
+function closeClientModal() {
+  document.getElementById("client-modal").style.display = 'none';
+  editingClientIndex = null;
+}
+
+function saveClientEdit() {
+  const name = document.getElementById("client-modal-name").value.trim();
+  const phone = document.getElementById("client-modal-phone").value.trim();
+  if (!name || !phone) return alert("Заполните ФИО и телефон");
+
+  clients[editingClientIndex] = { name, phone ,
+  'ФИО клиента': { he: 'שם הלקוח' },
+  'Email': { he: 'אימייל' },
+  'Адрес': { he: 'כתובת' },
+  'Тип устройства': { he: 'סוג המכשיר' },
+  'Бренд': { he: 'מותג' },
+  'Модель': { he: 'דגם' },
+  'IMEI / Серийный номер': { he: 'IMEI / מספר סידורי' },
+  'Опишите проблему...': { he: 'תאר את הבעיה...' },
+  'Название': { he: 'שם פריט' },
+  'Количество': { he: 'כמות' },
+  'Цена': { he: 'מחיר' }
+};
+  localStorage.setItem("clients", JSON.stringify(clients));
+  renderClients();
+  closeClientModal();
+}
+
+
+function deleteClient(index) {
+  if (confirm("Удалить этого клиента?")) {
+    clients.splice(index, 1);
+    localStorage.setItem('clients', JSON.stringify(clients));
+    renderClients();
+  }
+}
+
+
+const translations = {
+  'Ремонты': { he: 'תיקונים' },
+  'Клиенты': { he: 'לקוחות' },
+  'Склад': { he: 'מחסן' },
+  'Новый ремонт': { he: 'תיקון חדש' },
+  'Клиент': { he: 'לקוח' },
+  'Телефон': { he: 'טלפון' },
+  'Устройство': { he: 'מכשיר' },
+  'Действия': { he: 'פעולות' },
+  'ФИО': { he: 'שם מלא' },
+  'Название': { he: 'שם פריט' },
+  'Количество': { he: 'כמות' },
+  'Цена': { he: 'מחיר' },
+  'Добавить позицию': { he: 'הוסף פריט' },
+  'Сохранить': { he: 'שמור' },
+  'Отмена': { he: 'ביטול' },
+  'Информация о клиенте': { he: 'פרטי לקוח' },
+  'Удалить этого клиента?': { he: 'למחוק את הלקוח הזה?' }
+,
+  'ФИО клиента': { he: 'שם הלקוח' },
+  'Email': { he: 'אימייל' },
+  'Адрес': { he: 'כתובת' },
+  'Тип устройства': { he: 'סוג המכשיר' },
+  'Бренд': { he: 'מותג' },
+  'Модель': { he: 'דגם' },
+  'IMEI / Серийный номер': { he: 'IMEI / מספר סידורי' },
+  'Опишите проблему...': { he: 'תאר את הבעיה...' },
+  'Название': { he: 'שם פריט' },
+  'Количество': { he: 'כמות' },
+  'Цена': { he: 'מחיר' }
+};
+
+function switchLang(lang) {
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    const orig = el.getAttribute('data-lang');
+    if (translations[orig] && translations[orig][lang]) {
+      el.textContent = translations[orig][lang];
+    } else {
+      el.textContent = orig;
+    }
+  });
+}
+
+
+  document.querySelectorAll('[data-placeholder]').forEach(el => {
+    const orig = el.getAttribute('data-placeholder');
+    if (translations[orig] && translations[orig][lang]) {
+      el.setAttribute('placeholder', translations[orig][lang]);
+    } else {
+      el.setAttribute('placeholder', orig);
+    }
+  });
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const savedLang = localStorage.getItem("lang") || "ru";
+  switchLang(savedLang);
+});
+
+function switchLang(lang) {
+  localStorage.setItem("lang", lang);
+
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    const orig = el.getAttribute('data-lang');
+    if (translations[orig] && translations[orig][lang]) {
+      el.textContent = translations[orig][lang];
+    } else {
+      el.textContent = orig;
+    }
+  });
+
+  document.querySelectorAll('[data-placeholder]').forEach(el => {
+    const orig = el.getAttribute('data-placeholder');
+    if (translations[orig] && translations[orig][lang]) {
+      el.setAttribute('placeholder', translations[orig][lang]);
+    } else {
+      el.setAttribute('placeholder', orig);
+    }
+  });
+}
+
+
+function filterRepairs() {
+  const value = document.getElementById("search-repairs").value.toLowerCase();
+  const tbody = document.getElementById("repairs-table");
+  tbody.querySelectorAll("tr").forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(value) ? "" : "none";
+  });
+}
+
+function filterClients() {
+  const value = document.getElementById("search-clients").value.toLowerCase();
+  const tbody = document.getElementById("clients-table");
+  tbody.querySelectorAll("tr").forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(value) ? "" : "none";
+  });
+}
+
+function filterInventory() {
+  const value = document.getElementById("search-inventory").value.toLowerCase();
+  const tbody = document.getElementById("inventory-table");
+  tbody.querySelectorAll("tr").forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(value) ? "" : "none";
+  });
+}
+
+
+function calculateBilling() {
+  let repairSum = repairs.filter(r => r.paid).reduce((sum, r) => {
+    const price = parseFloat(r.price || 0);
+    return sum + (isNaN(price) ? 0 : price);
+  }, 0);
+
+  let inventorySum = inventory.reduce((sum, item) => {
+    const itemTotal = parseFloat(item.price || 0) * parseInt(item.qty || 0);
+    return sum + (isNaN(itemTotal) ? 0 : itemTotal);
+  }, 0);
+
+  document.getElementById("repair-total").textContent = repairSum.toFixed(2) + " ₪";
+  document.getElementById("inventory-total").textContent = inventorySum.toFixed(2) + " ₪";
+  document.getElementById("total-revenue").textContent = (repairSum + inventorySum).toFixed(2) + " ₪";
+}
+
+document.querySelectorAll("nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.textContent.includes("Счет")) calculateBilling();
+  });
+});
+</script>
+<div class="modal" id="inventory-modal">
+<div class="content">
+<h3 data-lang="Добавить товар">Добавить товар</h3>
+<input data-placeholder="Название" id="item-name" placeholder="Название"/><br/>
+<input data-placeholder="Количество" id="item-qty" placeholder="Количество" type="number"/><br/>
+<input data-placeholder="Цена" id="item-price" placeholder="Цена" type="number"/><br/>
+<button class="btn-compact" data-lang="Сохранить" onclick="saveInventoryItem()">Сохранить</button>
+<button class="btn-compact" data-lang="Отмена" onclick="closeInventoryForm()">Отмена</button>
+</div>
+</div>
+<div class="modal" id="client-modal">
+<div class="content">
+<h3 data-lang="Информация о клиенте">Информация о клиенте</h3>
+<input data-placeholder="ФИО" id="client-modal-name" placeholder="ФИО"/>
+<input data-placeholder="Телефон" id="client-modal-phone" placeholder="Телефон"/>
+<button class="btn-compact" data-lang="Сохранить" onclick="saveClientEdit()">Сохранить</button>
+<button class="btn-compact" data-lang="Закрыть" onclick="closeClientModal()">Закрыть</button>
+</div>
+</div>
+</body>
+</html>
